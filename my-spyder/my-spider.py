@@ -30,10 +30,12 @@ def main():
 # globals
 breakpoints = {9: True}
 stepping = False
+watchpoints = {}
 
 def debug(command, my_locals):
     global stepping
     global breakpoints
+    global watchpoints
 
     if command.find(' ') > 0:
         arg = command.split(' ')[1]
@@ -62,6 +64,12 @@ def debug(command, my_locals):
             print "You must supply a line number"
             return False
         breakpoints[int(arg)] = True
+        return True
+    elif command.startswith('w'):   # watchpoint
+        if not arg:
+            print "You must supply a variable name"
+            return False
+        watchpoints[arg] = True
         return True
     elif command.startswith('q'):   # quit
         #sys.exit(0)
