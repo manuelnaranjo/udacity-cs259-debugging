@@ -31,17 +31,6 @@ def main():
 breakpoints = {9: True}
 stepping = False
 
-""" *** INSTRUCTIONS ***
-Improve and expand this function to accept
-a print command 'p <arg>'.
-If the print command has no argument,
-print out the dictionary that holds all variables.
-Print the value of the supplied variable
-in a form 'var = repr(value)', if
-the 'p' is followed by an argument,
-or print 'No such variable:', arg
-if no such variable exists.
-"""
 def debug(command, my_locals):
     global stepping
     global breakpoints
@@ -68,9 +57,15 @@ def debug(command, my_locals):
 
         print arg, "=", repr(my_locals[arg])
         return True
-
+    elif command.startswith('b'):   # breakpoint
+        if not arg:
+            print "You must supply a line number"
+            return False
+        breakpoints[int(arg)] = True
+        return True
     elif command.startswith('q'):   # quit
-        sys.exit(0)
+        #sys.exit(0)
+        return True
     else:
         print "No such command", repr(command)
 
@@ -91,12 +86,17 @@ def traceit(frame, event, trace_arg):
         if stepping or breakpoints.has_key(frame.f_lineno):
             resume = False
             while not resume:
-                print event, frame.f_lineno, frame.f_code.co_name, frame.f_locals
+                print event, frame.f_lineno, frame.f_code.co_name,
+                print frame.f_locals
                 command = input_command()
                 resume = debug(command, frame.f_locals)
     return traceit
 
 # Using the tracer
-sys.settrace(traceit)
-main()
-sys.settrace(None)
+#sys.settrace(traceit)
+#main()
+#sys.settrace(None)
+
+print breakpoints
+debug("b 5", {'quote': False, 's': 'xyz', 'tag': False, 'c': 'b', 'out': ''})
+print breakpoints == {9: True, 5: True}
