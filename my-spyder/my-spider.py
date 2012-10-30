@@ -57,8 +57,17 @@ def debug(command, my_locals):
     elif command.startswith('c'):   # continue
         stepping = False
         return True
-    elif command.startswith('p')    # print
-        # YOUR CODE HERE
+    elif command.startswith('p'):    # print
+        if not arg:
+            print repr(my_locals)
+            return True
+
+        if arg not in my_locals:
+            print "No such variable:", arg
+            return True
+
+        print arg, "=", repr(my_locals[arg])
+        return True
 
     elif command.startswith('q'):   # quit
         sys.exit(0)
