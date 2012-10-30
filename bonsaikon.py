@@ -10,6 +10,7 @@
 import sys
 import math
 import random
+import itertools
 
 def square_root(x, eps = 0.00001):
     assert x >= 0
@@ -31,6 +32,8 @@ class Range:
     def __init__(self):
         self.min  = None  # Minimum value seen
         self.max  = None  # Maximum value seen
+        self.type = None  # type of variable
+        self.set  = set() # set of values taken
 
     # Invoke this for every value
     def track(self, value):
@@ -39,6 +42,9 @@ class Range:
 
         if self.max is None or value > self.max:
             self.max = value
+
+        self.type = type(value)
+        self.set.add(value)
 
     def __repr__(self):
         return repr(self.min) + ".." + repr(self.max)
@@ -78,16 +84,35 @@ class Invariants:
         for function, events in self.vars.iteritems():
             for event, vars in events.iteritems():
                 s += event + " " + function + ":\n"
-                # continue
 
                 for var, range in vars.iteritems():
+                    s += "    assert isinstance(" + var + ", " + range.type.__name__ + ")\n"
                     s += "    assert "
                     if range.min == range.max:
                         s += var + " == " + repr(range.min)
                     else:
                         s += repr(range.min) + " <= " + var + " <= " + repr(range.max)
                     s += "\n"
+                    s += "    assert %s in %s\n" % ( var, range.set)
 
+                for var1, var2 in itertools.combinations(vars, 2):
+                    val1 = vars[var1]
+                    val1 = [val1.min, val1.max]
+                    val2 = vars[var2]
+                    val2 = [val2.min, val2.max]
+
+                    rel = ""
+                    if val1 == val2:
+                        rel = "=="
+                    elif val1 <= val2:
+                        rel = "<="
+                    elif val1 >= val2:
+                        rel = ">="
+                    else:
+                        print "oops", var1, var2, val1, val2
+                        continue
+
+                    s += "    assert %s %s %s\n" % (var1, rel, var2)
         return s
 
 invariants = Invariants()
